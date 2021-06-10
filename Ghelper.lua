@@ -105,7 +105,7 @@ function check_update() -- Создаём функцию которая будет проверять наличие обнов
             updateIni = inicfg.load(nil, update_path)
             if tonumber(updateIni.info.vers) > script_vers then -- Сверяем версию в скрипте и в ini файле на github
                 sampAddChatMessage("{FFFFFF}Имеется {32CD32}новая {FFFFFF}версия скрипта. Версия: {32CD32}"..updateIni.info.vers_text..". {FFFFFF}/update что-бы обновить", 0xFF0000) -- Сообщаем о новой версии.
-                update_found == true -- если обновление найдено, ставим переменной значение true
+                update_found = true -- если обновление найдено, ставим переменной значение true
             end
             os.remove(update_path)
         end
