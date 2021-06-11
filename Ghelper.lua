@@ -1,5 +1,6 @@
 require "lib.moonloader" -- подключение библиотеки
 local keys = require "vkeys"
+local inicfg = require "inicfg"
 local imgui = require 'imgui'
 local encoding = require 'encoding'
 local dlstatus = require('moonloader').download_status
