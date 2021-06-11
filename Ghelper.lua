@@ -39,9 +39,7 @@ local script_path = thisScript().path
 
 -- радиокнопки
     local checked_band        = imgui.ImInt(1)
-
     local checked_jail        = imgui.ImInt(1)
-  
 --
 
 --комбобоксы
@@ -105,7 +103,7 @@ function check_update() -- Создаём функцию которая будет проверять наличие обнов
         if status == dlstatus.STATUS_ENDDOWNLOADDATA then
             updateIni = inicfg.load(nil, update_path)
             if tonumber(updateIni.info.vers) > script_vers then -- Сверяем версию в скрипте и в ini файле на github
-                sampAddChatMessage("{FFFFFF}Имеется {32CD32}новая {FFFFFF}версия скрипта. Версия: {32CD32}"..updateIni.info.vers_text..". {FFFFFF}/update что-бы обновить", 0xFF0000) -- Сообщаем о новой версии.
+                sampAddChatMessage("{FFFFFF}Имеется {32CD32}новая {FFFFFF}версия скрипта. Версия: {32CD32}"..updateIni.info.vers_text..". {FFFFFF}/upd что-бы обновить", 0xFF0000) -- Сообщаем о новой версии.
                 update_found = true -- если обновление найдено, ставим переменной значение true
             end
             os.remove(update_path)
@@ -120,15 +118,15 @@ function main()
 
     check_update()
 
-    if update_found then -- Если найдено обновление, регистрируем команду /update.
-        sampRegisterChatCommand('dupdate', function()  -- Если пользователь напишет команду, начнётся обновление.
-            update_state = true -- Если человек пропишет /update, скрипт обновится.
+    if update_found then -- Если найдено обновление, регистрируем команду /upd.
+        sampRegisterChatCommand('upd', function()  -- Если пользователь напишет команду, начнётся обновление.
+            update_state = true -- Если человек пропишет /upd, скрипт обновится.
         end)
     else
         sampAddChatMessage('{FFFFFF}Нету доступных обновлений!')
     end
 
-    sampRegisterChatCommandtestt("test", cmd_test)
+
     sampRegisterChatCommand("imgui", cmd_imgui)
     sampRegisterChatCommand("check", cmd_check)
     sampRegisterChatCommand("1", cmd_1)
@@ -136,6 +134,7 @@ function main()
 	sampRegisterChatCommand("3", cmd_3)
 	sampRegisterChatCommand("clans", cmd_clans)
     sampRegisterChatCommand("grul", cmd_grul)
+    sampRegisterChatCommand("test"), cmd_test)
 
     thread = lua_thread.create_suspended(thread_ghetto)
 
@@ -172,6 +171,10 @@ function main()
     end
 end
 
+function cmd_test(arg)
+    sampAddChatMessage("Если вы видите это сообщение, то скрипт обновился.", -1)
+end
+
 function se.onTogglePlayerSpectating(state)
     if state then
         specc = true
@@ -184,10 +187,6 @@ function se.onSpectatePlayer(id, type)
     if specc then
         ids = id
     end
-end
-
-function cmd_test(arg)
-    sampAddChatMessage("Обновление успешно. Загружена версия: {FFFF00} 1.1", -1)
 end
 
 function cmd_imgui(arg)
