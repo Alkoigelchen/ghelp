@@ -1,9 +1,7 @@
 require "lib.moonloader" -- подключение библиотеки
 local keys = require "vkeys"
-local inicfg = require "inicfg"
 local imgui = require 'imgui'
 local encoding = require 'encoding'
-local dlstatus = require('moonloader').download_status
 local se = require 'lib.samp.events'
 local ids = -1
 encoding.default = 'CP1251'
@@ -19,18 +17,42 @@ local arr_cheat = {"30 Aimbot", "30 WallHack", "10 Spread", "15 auto+c", "30 Sai
 local main_window_state = imgui.ImBool(false)
 local text_buffer = imgui.ImBuffer(256)
 
+script_version("1.1")
+local dlstatus = require('moonloader').download_status
 
-update_state = false -- Если переменная == true, значит начнётся обновление.
-update_found = false -- Если будет true, будет доступна команда /update.
+function update()
+    local fpath = os.getenv('TEMP') .. '\\testing_version.json' -- куда будет качаться наш файлик для сравнения версии
+    downloadUrlToFile('https://raw.githubusercontent.com/ValeriiVavilin/ghelp/main/Ghelper.lua', fpath, function(id, status, p1, p2) -- ссылку на ваш гитхаб где есть строчки которые я ввёл в теме или любой другой сайт
+        if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+        local f = io.open(fpath, 'r') -- открывает файл
+        if f then
+            local info = decodeJson(f:read('*a')) -- читает
+            updatelink = info.updateurl
+            if info and info.latest then
+                version = tonumber(info.latest) -- переводит версию в число
+                if version > tonumber(thisScript().version) then -- если версия больше чем версия установленная то...
+                    lua_thread.create(goupdate) -- апдейт
+                else -- если меньше, то
+                     update = false -- не даём обновиться 
+                     sampAddChatMessage(('[Testing]: У вас и так последняя версия! Обновление отменено'), color)
+                end
+            end
+        end
+    end
+end)
+end
 
-local script_vers = 1.1
-local script_vers_text = "v1.1" -- Название нашей версии. В будущем будем её выводить ползователю.
-
-local update_url = 'https://raw.githubusercontent.com/ValeriiVavilin/ghelp/main/update.ini' -- Путь к ini файлу. Позже нам понадобиться.
-local update_path = getWorkingDirectory() .. "/update.ini"
-
-local script_url = 'https://raw.githubusercontent.com/ValeriiVavilin/ghelp/main/Ghelper.lua' -- Путь скрипту.
-local script_path = thisScript().path
+function goupdate()
+sampAddChatMessage(('[Testing]: Обнаружено обновление. AutoReload может конфликтовать. Обновляюсь...'), color)
+sampAddChatMessage(('[Testing]: Текущая версия: '..thisScript().version..". Новая версия: "..version), color)
+wait(300)
+downloadUrlToFile(updatelink, thisScript().path, function(id3, status1, p13, p23) -- качает ваш файлик с latest version
+    if status1 == dlstatus.STATUS_ENDDOWNLOADDATA then
+    sampAddChatMessage(('[Testing]: Обновление завершено!'), color)
+    thisScript():reload()
+end
+end)
+end
 
 
 -- чекбоксы
@@ -47,7 +69,6 @@ local script_path = thisScript().path
 --
 
 local sw, sh = getScreenResolution()
-
 function SetStyle()
     imgui.SwitchContext()
     local style = imgui.GetStyle()
@@ -98,34 +119,9 @@ function SetStyle()
 end
 SetStyle()
 
-function check_update() -- Создаём функцию которая будет проверять наличие обновлений при запуске скрипта.
-    downloadUrlToFile(update_url, update_path, function(id, status)
-        if status == dlstatus.STATUS_ENDDOWNLOADDATA then
-            updateIni = inicfg.load(nil, update_path)
-            if tonumber(updateIni.info.vers) > script_vers then -- Сверяем версию в скрипте и в ini файле на github
-                sampAddChatMessage("{FFFFFF}Имеется {32CD32}новая {FFFFFF}версия скрипта. Версия: {32CD32}"..updateIni.info.vers_text..". {FFFFFF}/upd что-бы обновить", 0xFF0000) -- Сообщаем о новой версии.
-                update_found = true -- если обновление найдено, ставим переменной значение true
-            end
-            os.remove(update_path)
-        end
-    end)
-end
-
 function main()
     if not isSampLoaded() or not isSampfuncsLoaded() then return end
     while not isSampAvailable() do wait(100) end
-
-
-    check_update()
-
-    if update_found then -- Если найдено обновление, регистрируем команду /upd.
-        sampRegisterChatCommand('upd', function()  -- Если пользователь напишет команду, начнётся обновление.
-            update_state = true -- Если человек пропишет /upd, скрипт обновится.
-        end)
-    else
-        sampAddChatMessage('{FFFFFF}Нету доступных обновлений!')
-    end
-
 
     sampRegisterChatCommand("imgui", cmd_imgui)
     sampRegisterChatCommand("check", cmd_check)
@@ -134,7 +130,6 @@ function main()
 	sampRegisterChatCommand("3", cmd_3)
 	sampRegisterChatCommand("clans", cmd_clans)
     sampRegisterChatCommand("grul", cmd_grul)
-    sampRegisterChatCommand("test"), cmd_test)
 
     thread = lua_thread.create_suspended(thread_ghetto)
 
@@ -146,16 +141,6 @@ function main()
 
     while true do
         wait(0)
-
-        if update_state then -- Если человек напишет /update и обновлени есть, начнётся скаачивание скрипта.
-            downloadUrlToFile(script_url, script_path, function(id, status)
-                if status == dlstatus.STATUS_ENDDOWNLOADDATA then
-                    sampAddChatMessage("{FFFFFF}Скрипт {32CD32}успешно {FFFFFF}обновлён.", 0xFF0000)
-                end
-            end)
-            break
-        end
-
         if isKeyJustPressed(VK_F3) then
             cmd_imgui()
         end
@@ -169,10 +154,6 @@ function main()
         -- Блок выполняющийся бесконечно (пока самп активен)
 
     end
-end
-
-function cmd_test(arg)
-    sampAddChatMessage("Если вы видите это сообщение, то скрипт обновился.", -1)
 end
 
 function se.onTogglePlayerSpectating(state)
