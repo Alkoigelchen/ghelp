@@ -120,14 +120,14 @@ function main()
     check_update()
 
     if update_found then -- Если найдено обновление, регистрируем команду /update.
-        sampRegisterChatCommand('update' function()  -- Если пользователь напишет команду, начнётся обновление.
+        sampRegisterChatCommand('update', function()  -- Если пользователь напишет команду, начнётся обновление.
             update_state = true -- Если человек пропишет /update, скрипт обновится.
         end)
     else
         sampAddChatMessage('{FFFFFF}Нету доступных обновлений!')
     end
 
-
+    sampRegisterChatCommandtestt("test", cmd_test)
     sampRegisterChatCommand("imgui", cmd_imgui)
     sampRegisterChatCommand("check", cmd_check)
     sampRegisterChatCommand("1", cmd_1)
@@ -183,6 +183,10 @@ function se.onSpectatePlayer(id, type)
     if specc then
         ids = id
     end
+end
+
+function cmd_test(arg)
+    sampAddChatMessage("Обновление успешно. Загружена версия: {FFFF00} 1.1", -1)
 end
 
 function cmd_imgui(arg)
