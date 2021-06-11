@@ -17,7 +17,7 @@ local arr_cheat = {"30 Aimbot", "30 WallHack", "10 Spread", "15 auto+c", "30 Sai
 local main_window_state = imgui.ImBool(false)
 local text_buffer = imgui.ImBuffer(256)
 
-script_version("1.1")
+local latest = "1.1"
 
 
 
